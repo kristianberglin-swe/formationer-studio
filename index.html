@@ -5,7 +5,7 @@
 h1{font-size:22px;margin:0}h2{font-size:18px;margin:0 0 12px}button,input,select{font:inherit}button{background:#e4be64;color:#1b261d;border:0;border-radius:7px;padding:9px 12px;cursor:pointer}button.secondary{background:#344b3c;color:white;border:1px solid #67826b}button.active{outline:3px solid #f5df8d}button:disabled{opacity:.4;cursor:not-allowed}input,select{background:#24372b;color:white;border:1px solid #68826e;border-radius:6px;padding:8px;max-width:100%}input[type=range]{padding:0;accent-color:#e4be64}label{display:flex;flex-direction:column;gap:5px;font-size:13px}small,.muted{color:#b5c9b7}main{max-width:1500px;margin:auto;padding:18px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 325px;gap:16px}.panel{background:#203127;border:1px solid #4b6451;border-radius:10px;padding:15px;margin-bottom:14px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}.stage{background:#101a14;border:1px solid #5b6d60;border-radius:8px;overflow:hidden}.stage svg{width:100%;height:auto;display:block;touch-action:none;user-select:none}.stage g[data-id]{cursor:grab}.stage g[data-id]:active{cursor:grabbing}.fields{display:grid;grid-template-columns:1fr 1fr;gap:9px}.fields>*{min-width:0}.full{grid-column:1/-1}.hide{display:none!important}.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:12px}.item{background:#243a2c;padding:14px;border:1px solid #57745b;border-radius:9px}.item h3{margin:0 0 8px}.item p{margin:0 0 10px;color:#c5d2c6}.group{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0}.status{padding:10px 14px;background:#304936;border-radius:8px;margin:12px 0;color:#e7dfbc}.sectionTitle{font-weight:700;color:#e4be64;margin:14px 0 8px}.angleRow{display:flex;align-items:center;gap:5px;flex-wrap:wrap}.angleRow button{padding:7px 9px}.check{display:flex;flex-direction:row;align-items:center;gap:7px}.check input{width:auto}#seek{width:100%}.top-actions{display:flex;gap:8px;flex-wrap:wrap}@media(max-width:900px){.layout{grid-template-columns:1fr}main{padding:10px}} 
 </style></head><body>
 <header><h1>FORMATIONER · ADMIN</h1><div class="top-actions"><button id="home" class="secondary">Startsida</button><button id="publish">Exportera visningsprogram</button><button id="cloudConnect" class="secondary">⚙ GitHub-nyckel</button><button id="cloudLoad" class="secondary">↓ Hämta från GitHub</button><button id="cloudSave">☁ Spara till GitHub</button><button id="backup" class="secondary">Exportera alla</button><button id="portable" class="secondary">Spara ADMIN med alla formationer</button><button id="restore" class="secondary">Importera</button><input id="importfile" class="hide" type="file" accept=".json,application/json"></div></header>
-<div id="cloudInfo" style="padding:9px 18px;background:#17382b;color:#dcffe5;font-size:14px">GitHub: Inte ansluten. Arbeta lokalt eller anslut med GitHub-nyckel.</div><main><section id="library"><div class="panel"><h2>Mina formationer och animationer</h2><p class="muted">Skapa en scen med SIB:s arbetssätt. Samma scen används för redigering och uppspelning. Arbetet sparas lokalt i webbläsaren. Använd ”Spara till GitHub” för att dela ändringar mellan datorer. Använd ”Spara ADMIN med alla formationer” för att bädda in projekten i filen, och ”Exportera visningsprogram” för att dela dem.</p><button id="new">+ Skapa ny</button></div><div id="items" class="items"></div></section>
+<div id="cloudInfo" style="padding:9px 18px;background:#17382b;color:#dcffe5;font-size:14px">GitHub: Ange nyckel för att aktivera automatisk hämtning och sparning.</div><main><section id="library"><div class="panel"><h2>Mina formationer och animationer</h2><p class="muted">Skapa en scen med SIB:s arbetssätt. Samma scen används för redigering och uppspelning. Arbetet sparas lokalt i webbläsaren. När GitHub är anslutet sparas ändringar automatiskt efter en kort stund. Du kan också spara manuellt. Använd ”Spara ADMIN med alla formationer” för att bädda in projekten i filen, och ”Exportera visningsprogram” för att dela dem.</p><button id="new">+ Skapa ny</button></div><div id="items" class="items"></div></section>
 <section id="create" class="hide"><div class="panel"><h2>Skapa formation</h2><div class="fields"><label class="full">Namn<input id="newname" placeholder="Exempel: Skytteled – Kil"></label><label>Bakgrund<select id="newbg"><option value="terrain">Öppen terräng</option><option value="street">Gata</option><option value="corner">Corner fed</option><option value="centre">Center fed</option></select></label><label>Antal egna soldater<input id="newcount" type="number" min="1" max="30" value="4"></label></div><div class="toolbar"><button id="createok">Skapa och redigera</button><button id="cancelnew" class="secondary">Avbryt</button></div></div></section>
 <section id="workspace" class="hide"><div class="toolbar"><strong id="scenetitle"></strong><span class="muted" id="scenebg"></span><button id="editToggle" class="secondary">▶ Visa animation</button><button id="save">Spara</button><button id="back" class="secondary">Tillbaka</button></div>
 <div class="layout"><div><div class="stage"><svg id="scene" viewBox="0 0 1200 1150" xmlns="http://www.w3.org/2000/svg"></svg></div><div class="panel"><div class="toolbar"><button id="play">▶ Spela</button><button id="reset" class="secondary">↺ Från början</button><span id="clock">0,0 / 20,0 s</span></div><input id="seek" type="range" min="0" max="2000" value="0"><div class="fields"><label>Total animationstid (sekunder)<input id="total" type="number" min="1" max="300" step=".5" value="20"></label><label class="check"><input id="routes" type="checkbox" checked>Visa rörelsevägar vid redigering</label></div></div></div>
@@ -33,6 +33,45 @@ const CLOUD_REPO='kristianberglin-swe/formationer_Admin';
 const CLOUD_FILE='formationer-data.json';
 const CLOUD_TOKEN_KEY='formationer-github-token-session';
 let cloudSha=null;
+let cloudReady=false, cloudBusy=false, cloudDirty=false, cloudTimer=null, cloudRevision=0;
+let cloudSnapshot=JSON.stringify(projects);
+function cloudMarkDirty(){
+  const now=JSON.stringify(projects);
+  if(now===cloudSnapshot)return;
+  cloudSnapshot=now;cloudRevision++;cloudDirty=true;
+  try{persist()}catch{}
+  if(!cloudToken()){cloudStatus('Osparade molnändringar – ange GitHub-nyckel. Sparat lokalt.');return}
+  if(!cloudReady){cloudStatus('Osparade molnändringar – hämta först senaste versionen från GitHub.');return}
+  cloudStatus('Osparade ändringar – sparas automatiskt snart…');
+  clearTimeout(cloudTimer);cloudTimer=setTimeout(cloudAutoSave,1800);
+}
+async function cloudAutoSave(){
+  if(!cloudDirty||!cloudReady||!cloudToken())return;
+  if(cloudBusy){clearTimeout(cloudTimer);cloudTimer=setTimeout(cloudAutoSave,1200);return}
+  cloudBusy=true;
+  const revision=cloudRevision;
+  const payload={version:1,projects:copy(projects)};
+  try{
+    cloudStatus('Sparar automatiskt till GitHub…');
+    const remote=await cloudRequest('GET');
+    if(!remote)return;
+    if(remote.missing||remote.sha!==cloudSha){
+      cloudReady=false;
+      cloudStatus('GitHub har ändrats på en annan dator. Automatisk sparning stoppad. Exportera säkerhetskopia och hämta senaste versionen.');
+      return;
+    }
+    const result=await cloudRequest('PUT',{message:'Autospara Formationer ('+payload.projects.length+' formationer)',content:encodeUnicode(JSON.stringify(payload,null,2)),sha:cloudSha});
+    if(!result)return;
+    cloudSha=result.content.sha;
+    if(revision===cloudRevision){cloudDirty=false;cloudStatus('✓ Sparat automatiskt till GitHub · '+payload.projects.length+' formationer.')}else{
+      cloudStatus('Nya ändringar väntar på sparning…');clearTimeout(cloudTimer);cloudTimer=setTimeout(cloudAutoSave,1100);
+    }
+  }catch(e){cloudStatus('Autosparning misslyckades: '+e.message+' – ändringarna finns lokalt.');}
+  finally{cloudBusy=false}
+}
+// Jämför verkliga projektdata efter användarinteraktion, inte vid uppspelning eller tidslinjeflytt.
+for(const eventName of ['click','change','pointerup'])document.addEventListener(eventName,()=>setTimeout(cloudMarkDirty,0),true);
+
 function cloudToken(){return sessionStorage.getItem(CLOUD_TOKEN_KEY)||''}
 function cloudStatus(msg){const el=$('cloudInfo');if(el)el.textContent=msg;else alert(msg)}
 function cloudHeaders(){return {'Accept':'application/vnd.github+json','Authorization':'Bearer '+cloudToken(),'X-GitHub-Api-Version':'2022-11-28'}}
@@ -40,7 +79,7 @@ function cloudConnect(){
   const value=prompt('Klistra in en fine-grained GitHub-token med Contents: Read and write ENDAST för det privata repositoryt formationer_Admin. Nyckeln sparas bara i denna webbläsarflik. Lämna tomt för att koppla från.',cloudToken());
   if(value===null)return;
   if(!value.trim()){sessionStorage.removeItem(CLOUD_TOKEN_KEY);cloudStatus('GitHub frånkopplat.');return}
-  sessionStorage.setItem(CLOUD_TOKEN_KEY,value.trim());cloudStatus('GitHub-nyckel sparad i denna flik. Klicka Hämta från GitHub eller Spara till GitHub.');
+  sessionStorage.setItem(CLOUD_TOKEN_KEY,value.trim());cloudStatus('GitHub-nyckel ansluten. Hämtar senaste formationerna…');cloudLoad(true);
 }
 async function cloudRequest(method,body){
   if(!cloudToken()){cloudConnect();if(!cloudToken())return null}
@@ -53,13 +92,13 @@ async function cloudRequest(method,body){
 }
 function encodeUnicode(str){const bytes=new TextEncoder().encode(str);let binary='';for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(binary)}
 function decodeUnicode(base64){const binary=atob(base64.replace(/\s/g,''));const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));return new TextDecoder().decode(bytes)}
-async function cloudLoad(){
+async function cloudLoad(automatic=false){
   try{
     cloudStatus('Hämtar från GitHub…');const file=await cloudRequest('GET');if(!file)return;
     if(file.missing){cloudSha=null;cloudStatus('Ingen molnfil ännu. Klicka Spara till GitHub för att skapa den.');return}
     const data=JSON.parse(decodeUnicode(file.content));if(!data||!Array.isArray(data.projects))throw new Error('Fel format i molnfilen.');
-    if(!confirm('Hämta '+data.projects.length+' formationer från GitHub? Dina nuvarande lokala ändringar ersätts. Exportera säkerhetskopia först om du är osäker.')){cloudStatus('Hämtning avbruten.');return}
-    projects=data.projects;cloudSha=file.sha;current=null;persist();stop();show('library');cloudStatus('Hämtat '+projects.length+' formationer från GitHub.');
+    if(cloudDirty || (JSON.stringify(projects)!==JSON.stringify(data.projects) && !automatic)){if(!confirm('Hämta '+data.projects.length+' formationer från GitHub? Lokala ändringar ersätts. Exportera säkerhetskopia först om du är osäker.')){cloudStatus('Hämtning avbruten.');return}} else if(automatic && JSON.stringify(projects)!==JSON.stringify(data.projects) && localStorage.getItem(KEY) && !confirm('GitHub har andra formationer än de lokala. Hämta molnversionen? Välj Avbryt om du har osparade lokala ändringar.')){cloudStatus('Molnhämtning avbruten. Lokala formationer behålls.');return}
+    projects=data.projects;cloudSha=file.sha;cloudReady=true;cloudDirty=false;clearTimeout(cloudTimer);cloudSnapshot=JSON.stringify(projects);current=null;persist();stop();show('library');cloudStatus('✓ Synkroniserat med GitHub · '+projects.length+' formationer. Autosparning aktiv.');
   }catch(e){cloudStatus('Kunde inte hämta: '+e.message)}
 }
 async function cloudSave(){
@@ -70,7 +109,7 @@ async function cloudSave(){
       if(!confirm('GitHub har en version som du inte har hämtat i denna flik. För att undvika att skriva över andra ändringar bör du välja Avbryt och Hämta från GitHub. Vill du ÄNDÅ skriva över molnversionen?')){cloudStatus('Sparandet avbröts. Hämta senaste versionen först.');return}
     }
     const payload={version:1,projects};const result=await cloudRequest('PUT',{message:'Spara Formationer ('+projects.length+' formationer)',content:encodeUnicode(JSON.stringify(payload,null,2)),...(remote.missing?{}:{sha:remote.sha})});
-    if(!result)return;cloudSha=result.content.sha;cloudStatus('✓ Sparat '+projects.length+' formationer till privata GitHub!');
+    if(!result)return;cloudSha=result.content.sha;cloudReady=true;cloudDirty=false;cloudSnapshot=JSON.stringify(projects);clearTimeout(cloudTimer);cloudStatus('✓ Sparat '+projects.length+' formationer till privata GitHub! Autosparning aktiv.');
   }catch(e){cloudStatus('Kunde inte spara: '+e.message)}
 }
 
@@ -144,4 +183,5 @@ $('cloudConnect').onclick=cloudConnect;
 $('cloudLoad').onclick=cloudLoad;
 $('cloudSave').onclick=cloudSave;
 show('library');
+if(cloudToken()){cloudStatus('GitHub-nyckel hittad. Hämtar formationer…');cloudLoad(true)}else{cloudStatus('Lokalt läge. Klicka GitHub-nyckel för att aktivera autosparning.')}
 </script></body></html>
