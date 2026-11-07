@@ -4,7 +4,7 @@
 *{box-sizing:border-box}body{margin:0}header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:14px 22px;background:#213c2d;flex-wrap:wrap}
 h1{font-size:22px;margin:0}h2{font-size:18px;margin:0 0 12px}button,input,select{font:inherit}button{background:#e4be64;color:#1b261d;border:0;border-radius:7px;padding:9px 12px;cursor:pointer}button.secondary{background:#344b3c;color:white;border:1px solid #67826b}button.active{outline:3px solid #f5df8d}button:disabled{opacity:.4;cursor:not-allowed}input,select{background:#24372b;color:white;border:1px solid #68826e;border-radius:6px;padding:8px;max-width:100%}input[type=range]{padding:0;accent-color:#e4be64}label{display:flex;flex-direction:column;gap:5px;font-size:13px}small,.muted{color:#b5c9b7}main{max-width:1500px;margin:auto;padding:18px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 325px;gap:16px}.panel{background:#203127;border:1px solid #4b6451;border-radius:10px;padding:15px;margin-bottom:14px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}.stage{background:#101a14;border:1px solid #5b6d60;border-radius:8px;overflow:hidden}.stage svg{width:100%;height:auto;display:block;touch-action:none;user-select:none}.stage g[data-id]{cursor:grab}.stage g[data-id]:active{cursor:grabbing}.fields{display:grid;grid-template-columns:1fr 1fr;gap:9px}.fields>*{min-width:0}.full{grid-column:1/-1}.hide{display:none!important}.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:12px}.item{background:#243a2c;padding:14px;border:1px solid #57745b;border-radius:9px}.item h3{margin:0 0 8px}.item p{margin:0 0 10px;color:#c5d2c6}.group{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0}.status{padding:10px 14px;background:#304936;border-radius:8px;margin:12px 0;color:#e7dfbc}.sectionTitle{font-weight:700;color:#e4be64;margin:14px 0 8px}.angleRow{display:flex;align-items:center;gap:5px;flex-wrap:wrap}.angleRow button{padding:7px 9px}.check{display:flex;flex-direction:row;align-items:center;gap:7px}.check input{width:auto}#seek{width:100%}.top-actions{display:flex;gap:8px;flex-wrap:wrap}@media(max-width:900px){.layout{grid-template-columns:1fr}main{padding:10px}} 
 </style></head><body>
-<header><h1>FORMATIONER · ADMIN</h1><div class="top-actions"><button id="home" class="secondary">Startsida</button><button id="publish">Exportera visningsprogram</button><button id="cloudConnect" class="secondary">⚙ GitHub-nyckel</button><button id="cloudLoad" class="secondary">↓ Hämta från GitHub</button><button id="cloudSave">☁ Spara till GitHub</button><button id="backup" class="secondary">Exportera alla</button><button id="portable" class="secondary">Spara ADMIN med alla formationer</button><button id="restore" class="secondary">Importera</button><input id="importfile" class="hide" type="file" accept=".json,application/json"></div></header>
+<header><h1>FORMATIONER · ADMIN</h1><div class="top-actions"><button id="home" class="secondary">Startsida</button><button id="publish">Exportera visningsprogram</button><button id="cloudConnect" class="secondary">⚙ GitHub-nyckel</button><button id="cloudLoad" class="secondary">↓ Hämta från GitHub</button><button id="cloudSave">☁ Spara till GitHub</button><button id="publishLive" style="background:#e6b94e;color:#17241d">🌐 Publicera till VISNING</button><button id="backup" class="secondary">Exportera alla</button><button id="portable" class="secondary">Spara ADMIN med alla formationer</button><button id="restore" class="secondary">Importera</button><input id="importfile" class="hide" type="file" accept=".json,application/json"></div></header>
 <div id="cloudInfo" style="padding:9px 18px;background:#17382b;color:#dcffe5;font-size:14px">GitHub: Ange nyckel för att aktivera automatisk hämtning och sparning.</div><main><section id="library"><div class="panel"><h2>Mina formationer och animationer</h2><p class="muted">Skapa en scen med SIB:s arbetssätt. Samma scen används för redigering och uppspelning. Arbetet sparas lokalt i webbläsaren. När GitHub är anslutet sparas ändringar automatiskt efter en kort stund. Du kan också spara manuellt. Använd ”Spara ADMIN med alla formationer” för att bädda in projekten i filen, och ”Exportera visningsprogram” för att dela dem.</p><button id="new">+ Skapa ny</button></div><div id="items" class="items"></div></section>
 <section id="create" class="hide"><div class="panel"><h2>Skapa formation</h2><div class="fields"><label class="full">Namn<input id="newname" placeholder="Exempel: Skytteled – Kil"></label><label>Bakgrund<select id="newbg"><option value="terrain">Öppen terräng</option><option value="street">Gata</option><option value="corner">Corner fed</option><option value="centre">Center fed</option></select></label><label>Antal egna soldater<input id="newcount" type="number" min="1" max="30" value="4"></label></div><div class="toolbar"><button id="createok">Skapa och redigera</button><button id="cancelnew" class="secondary">Avbryt</button></div></div></section>
 <section id="workspace" class="hide"><div class="toolbar"><strong id="scenetitle"></strong><span class="muted" id="scenebg"></span><button id="editToggle" class="secondary">▶ Visa animation</button><button id="save">Spara</button><button id="back" class="secondary">Tillbaka</button></div>
@@ -179,6 +179,50 @@ $('publish').onclick=()=>{
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Formationer.html';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
   alert('Visningsprogrammet har exporterats med '+projects.length+' formationer. Dela Formationer.html – behåll ADMIN-filen privat.');
 };
+
+// Publicering använder en separat, begränsad token för det offentliga repositoryt.
+// Den privata ADMIN-token används aldrig för att publicera.
+const PUBLISH_TOKEN_KEY='formationer-public-token-session';
+const PUBLISH_REPO='kristianberglin-swe/formationer';
+function publicToken(){return sessionStorage.getItem(PUBLISH_TOKEN_KEY)||''}
+function publicHeaders(token){return {'Accept':'application/vnd.github+json','Authorization':'Bearer '+token,'X-GitHub-Api-Version':'2022-11-28'}}
+function viewerPage(){
+  const data=JSON.stringify(projects).replace(/</g,'\\u003c');
+  return VIEWER_TEMPLATE.replace('__ASSETS__',JSON.stringify(ASSETS)).replace('__DATA__',data);
+}
+async function publishLive(){
+  if(!projects.length){alert('Det finns inga formationer att publicera.');return}
+  if(cloudDirty || (cloudReady && JSON.stringify(projects)!==cloudSnapshot)){
+    alert('Det finns osparade ändringar i ADMIN. Vänta tills GitHub-sparningen är klar eller klicka Spara till GitHub innan du publicerar.');
+    return;
+  }
+  let token=publicToken();
+  if(!token){
+    token=prompt('Ange en SEPARAT fine-grained GitHub-token med Contents: Read and write ENDAST för det offentliga repositoryt formationer. Klistra aldrig in den i GitHubs HTML-kod. Nyckeln sparas endast i denna flik.');
+    if(!token || !token.trim())return;
+    token=token.trim();
+    sessionStorage.setItem(PUBLISH_TOKEN_KEY,token);
+  }
+  if(!confirm('Publicera '+projects.length+' formationer till den offentliga visningssidan? Detta ersätter index.html i formationer (inte ADMIN).'))return;
+  const button=$('publishLive'),old=button.textContent;
+  button.disabled=true;button.textContent='Publicerar…';
+  try{
+    const url='https://api.github.com/repos/'+PUBLISH_REPO+'/contents/index.html';
+    const headers=publicHeaders(token);
+    const existing=await fetch(url,{headers,cache:'no-store'});
+    if(!existing.ok)throw new Error('Kan inte läsa index.html (HTTP '+existing.status+'). Kontrollera nyckelns repository och behörighet.');
+    const file=await existing.json();
+    const page=viewerPage();
+    const response=await fetch(url,{method:'PUT',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({message:'Publicera Formationer VISNING ('+projects.length+' formationer)',content:encodeUnicode(page),sha:file.sha,branch:'main'})});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error((result.message||'GitHub-fel')+' (HTTP '+response.status+')');
+    alert('Publicerat '+projects.length+' formationer! GitHub Pages uppdateras normalt inom någon minut. Öppna https://kristianberglin-swe.github.io/formationer/');
+  }catch(e){
+    alert('Publiceringen misslyckades: '+e.message+'\nKontrollera att publiceringsnyckeln har Contents: Read and write för formationer. Om den har gått ut behöver du ange en ny.');
+    sessionStorage.removeItem(PUBLISH_TOKEN_KEY);
+  }finally{button.disabled=false;button.textContent=old}
+}
+$('publishLive').onclick=publishLive;
 $('cloudConnect').onclick=cloudConnect;
 $('cloudLoad').onclick=cloudLoad;
 $('cloudSave').onclick=cloudSave;
